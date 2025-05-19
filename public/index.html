@@ -1,0 +1,58 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>WOROLD OF INTERNS Resume Parser</title>
+  <style>
+    body { font-family: Arial, sans-serif; margin: 40px; background: #f8f9fa; }
+    .container { max-width: 600px; margin: auto; background: #fff; border-radius: 8px; box-shadow: 0 2px 8px #0001; padding: 32px; }
+    h1 { text-align: center; }
+    .result { white-space: pre-wrap; background: #f1f3f4; border-radius: 6px; padding: 16px; margin-top: 24px; }
+    .error { color: #c00; margin-top: 16px; }
+    button { background: #4285f4; color: #fff; border: none; padding: 10px 24px; border-radius: 4px; cursor: pointer; font-size: 16px; }
+    button:disabled { background: #aaa; }
+    label { display: block; margin-bottom: 8px; }
+    input[type="file"] { margin-bottom: 16px; }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <h1>WOROLD OF INTERNS Resume Parser</h1>
+    <form id="uploadForm">
+      <label for="pdf">Attach Resume PDF:</label>
+      <input type="file" id="pdf" name="pdf" accept="application/pdf" required />
+      <button type="submit">Parse Resume</button>
+    </form>
+    <div class="error" id="error"></div>
+    <div class="result" id="result"></div>
+  </div>
+  <script>
+    const form = document.getElementById('uploadForm');
+    const errorDiv = document.getElementById('error');
+    const resultDiv = document.getElementById('result');
+    form.onsubmit = async (e) => {
+      e.preventDefault();
+      errorDiv.textContent = '';
+      resultDiv.textContent = 'Parsing...';
+      const formData = new FormData(form);
+      try {
+        const res = await fetch('/api/parse', {
+          method: 'POST',
+          body: formData
+        });
+        const data = await res.json();
+        if (data.error) {
+          errorDiv.textContent = data.error + (data.details ? `: ${data.details}` : '');
+          resultDiv.textContent = '';
+        } else {
+          resultDiv.textContent = JSON.stringify(data.parsed || data.raw, null, 2);
+        }
+      } catch (err) {
+        errorDiv.textContent = 'Failed to parse resume.';
+        resultDiv.textContent = '';
+      }
+    };
+  </script>
+</body>
+</html>
